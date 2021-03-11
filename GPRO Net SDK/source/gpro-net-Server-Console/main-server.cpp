@@ -27,11 +27,14 @@
 
 int main(int const argc, char const* const argv[])
 {
-	gproNet::cRakNetServer server;
+	//gproNet::cRakNetServer server;
+	
+	gproNet::cMasterServer masterServer = gproNet::cMasterServer(); //Initialize master server
 
 	while (1)
 	{
-		server.MessageLoop();
+		masterServer.MessageLoop();
+		//server.MessageLoop();
 	}
 
 	printf("\n\n");

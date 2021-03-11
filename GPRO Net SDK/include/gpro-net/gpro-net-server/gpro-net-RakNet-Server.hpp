@@ -29,6 +29,8 @@
 
 #include "gpro-net/gpro-net/gpro-net-RakNet.hpp"
 
+#include <vector>
+
 
 namespace gproNet
 {
@@ -37,11 +39,17 @@ namespace gproNet
 	enum eMessageServer
 	{
 		ID_GPRO_MESSAGE_SERVER_BEGIN = ID_GPRO_MESSAGE_COMMON_END,
-
-
+		ID_GPRO_CLIENT_MASTER_CONNECT,
+		ID_GPRO_CLIENT_SERVER_CONNECT,
+		ID_GPRO_CLIENT_SERVER_DISCONNECT,
 
 		ID_GPRO_MESSAGE_SERVER_END
 	};
+
+	const int MAX_SERVERS = 4; //Arbitrary # of servers
+
+	//Need:
+	// - List of servers
 
 
 	// cRakNetServer
@@ -58,8 +66,45 @@ namespace gproNet
 		//	Destructor.
 		virtual ~cRakNetServer();
 
+		//Initialize
+		//Starts up and initializes this server
+		virtual void Initialize();
+
 		// protected methods
 	protected:
+		// ProcessMessage
+		//	Unpack and process packet message.
+		//		param bitstream: packet data in bitstream
+		//		param dtSendToReceive: locally-adjusted time difference from sender to receiver
+		//		param msgID: message identifier
+		//		return: was message processed
+		virtual bool ProcessMessage(RakNet::BitStream& bitstream, RakNet::SystemAddress const sender, RakNet::Time const dtSendToReceive, RakNet::MessageID const msgID);
+	};
+
+	class cMasterServer : public cRakNetServer
+	{
+	public: 
+		cMasterServer()
+		{
+			//Populate master with available servers
+			for (int i = 0; i < MAX_SERVERS; i++)
+			{
+				//Create and initialize a new server
+				cRakNetServer server = cRakNetServer();
+				server.Initialize();
+				availbleServers.push_back(server); //Push server to master's list
+			}
+		}
+
+	protected:
+		const RakNet::SystemAddress masterSystemAddress; //Address info for the master server
+		std::vector<cRakNetServer> availbleServers;
+
+		//ConnectClientToAvailableServer
+		//Finds an available server to connect client to
+		//		return: was client connected to a server
+		bool ConnectClientToAvailableServer(); 
+
 		// ProcessMessage
 		//	Unpack and process packet message.
 		//		param bitstream: packet data in bitstream
