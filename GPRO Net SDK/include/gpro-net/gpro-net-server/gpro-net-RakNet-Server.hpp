@@ -79,6 +79,11 @@ namespace gproNet
 		//		param msgID: message identifier
 		//		return: was message processed
 		virtual bool ProcessMessage(RakNet::BitStream& bitstream, RakNet::SystemAddress const sender, RakNet::Time const dtSendToReceive, RakNet::MessageID const msgID);
+	
+		sSpatialPose& GetPose();
+
+	protected:
+		sSpatialPose pose;
 	};
 
 	class cMasterServer : public cRakNetServer
@@ -113,6 +118,7 @@ namespace gproNet
 		//		return: was message processed
 		virtual bool ProcessMessage(RakNet::BitStream& bitstream, RakNet::SystemAddress const sender, RakNet::Time const dtSendToReceive, RakNet::MessageID const msgID);
 	};
+
 
 }
 

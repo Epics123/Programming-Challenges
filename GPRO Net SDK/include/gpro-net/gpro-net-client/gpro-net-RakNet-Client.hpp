@@ -37,9 +37,8 @@ namespace gproNet
 	enum eMessageClient
 	{
 		ID_GPRO_MESSAGE_CLIENT_BEGIN = ID_GPRO_MESSAGE_COMMON_END,
-
-
-
+		ID_GPRO_SPATIAL_DATA_RECEIVE,
+		ID_GPRO_SPACIAL_DATA_SEND,
 		ID_GPRO_MESSAGE_CLIENT_END
 	};
 
@@ -67,6 +66,11 @@ namespace gproNet
 		//		param msgID: message identifier
 		//		return: was message processed
 		virtual bool ProcessMessage(RakNet::BitStream& bitstream, RakNet::SystemAddress const sender, RakNet::Time const dtSendToReceive, RakNet::MessageID const msgID);
+
+		sSpatialPose& GetPose();
+
+	protected:
+		sSpatialPose pose;
 	};
 
 }

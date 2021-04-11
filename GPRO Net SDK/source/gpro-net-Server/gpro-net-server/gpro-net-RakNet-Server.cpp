@@ -72,7 +72,30 @@ namespace gproNet
 			peer->Send(&bitstream_w, MEDIUM_PRIORITY, UNRELIABLE_SEQUENCED, 0, sender, false);
 		}	return true;
 
+		case ID_GPRO_COMMON_SPACIAL_DATA_SEND:
+		{
+			// client sends compressed data to the server
+			RakNet::BitStream bitstream_w;
+			GetPose().CompressData(bitstream_w);
+			peer->Send(&bitstream_w, MEDIUM_PRIORITY, UNRELIABLE_SEQUENCED, 0, sender, false);
+
+			return true;
+		}
+
+		case ID_GPRO_COMMON_SPATIAL_DATA_RECEIVE:
+		{
+			// client receives compressed data from server and decompresses it
+			GetPose().DecompressData(bitstream);
+			return true;
+		}
+
 		}
 		return false;
 	}
+
+	gproNet::sSpatialPose& cRakNetServer::GetPose()
+	{
+		return pose;
+	}
+
 }

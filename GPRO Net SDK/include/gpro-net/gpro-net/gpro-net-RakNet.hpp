@@ -53,10 +53,97 @@ namespace gproNet
 	enum eMessageCommon
 	{
 		ID_GPRO_MESSAGE_COMMON_BEGIN = ID_USER_PACKET_ENUM,
-
-
-
+		ID_GPRO_COMMON_SPATIAL_DATA_RECEIVE,
+		ID_GPRO_COMMON_SPACIAL_DATA_SEND,
 		ID_GPRO_MESSAGE_COMMON_END
+	};
+
+	// Description of spatial pose.
+	struct sSpatialPose
+	{
+		float scale[3];     // non-uniform scale
+		float rotate[3];    // orientation as Euler angles
+		float translate[3]; // translation
+
+		short compScale[3]; //compressed scale
+		short compRotate[3]; //compressed rotation
+		short compTranslate[3]; //compressed translation
+
+		// read from stream
+		RakNet::BitStream& Read(RakNet::BitStream& bitstream)
+		{
+			bitstream.Read(compScale[0]);
+			bitstream.Read(compScale[1]);
+			bitstream.Read(compScale[2]);
+			bitstream.Read(compRotate[0]);
+			bitstream.Read(compRotate[1]);
+			bitstream.Read(compRotate[2]);
+			bitstream.Read(compTranslate[0]);
+			bitstream.Read(compTranslate[1]);
+			bitstream.Read(compTranslate[2]);
+			return bitstream;
+		}
+
+		// write to stream
+		RakNet::BitStream& Write(RakNet::BitStream& bitstream) const
+		{
+			bitstream.Write(compScale[0]);
+			bitstream.Write(compScale[1]);
+			bitstream.Write(compScale[2]);
+			bitstream.Write(compRotate[0]);
+			bitstream.Write(compRotate[1]);
+			bitstream.Write(compRotate[2]);
+			bitstream.Write(compTranslate[0]);
+			bitstream.Write(compTranslate[1]);
+			bitstream.Write(compTranslate[2]);
+			return bitstream;
+		}
+
+		//Compresses data to send
+		void CompressData(RakNet::BitStream& bitstream)
+		{
+			//Compression
+			for (int i = 0; i < 3; i++)
+			{
+				//Compress scale
+				short cScale = scale[i] * sqrt(2) * 511; //I believe this is what we did in class
+				compScale[i] = cScale;
+
+				//Compress rotation
+				short cRot = rotate[i] * sqrt(2) * 511;
+				compRotate[i] = cRot;
+
+				//Compress Translation
+				short cTranslate = translate[i] * sqrt(2) * 511;
+				compTranslate[i] = cTranslate;
+
+			}
+
+			//Write to bitstream
+			Write(bitstream);
+		}
+
+		//Decompresses received data
+		void DecompressData(RakNet::BitStream& bitstream)
+		{
+			//Read from bitstream
+			Read(bitstream);
+
+			//Decompression
+			for (int i = 0; i < 3; i++)
+			{
+				//Decompress scale
+				float dScale = compScale[i] / (sqrt(2) * 511); // multiply by reciprocal of compression to decompress
+				scale[i] = dScale;
+
+				//Decompress rotation
+				float dRot = compRotate[i] / (sqrt(2) * 511);
+				rotate[i] = dRot;
+
+				//Decompress translation
+				float dTranslate = compTranslate[i] / (sqrt(2) * 511);
+			}
+		}
 	};
 
 
